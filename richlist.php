@@ -52,7 +52,7 @@
 				<tr>
 					<td><?=$richList['position']?></td>
 					<td>
-						<a href='<?=$richList['address']?>' target="_blank">
+						<a href='search.php?id=<?=$richList['address']?>' target="_blank">
 							<?=$richList['address']?>
 						</a>
 					</td>

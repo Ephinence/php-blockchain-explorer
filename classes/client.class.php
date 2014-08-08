@@ -46,7 +46,7 @@ abstract class Client
 	static public function getBlockData($limit = 5)
 	{
 		return getRowsByQuery("
-			SELECT DISTINCT block, COUNT(txid) AS transactions FROM tx_data GROUP BY `block` ORDER BY `block` DESC LIMIT $limit 
+			SELECT DISTINCT block, COUNT(DISTINCT txid) AS transactions FROM tx_data GROUP BY `block` ORDER BY `block` DESC LIMIT $limit 
 		");
 	}
 	
@@ -61,6 +61,13 @@ abstract class Client
 	{
 		return getRowsByQuery("
 			SELECT * FROM tx_data WHERE `address`='$address'
+		");
+	}
+	
+	static public function getBalance($address)
+	{
+		return getRowsByQuery("
+			SELECT SUM(amount) as amount FROM tx_data WHERE `address`='$address'
 		");
 	}
 	

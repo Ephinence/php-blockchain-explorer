@@ -13,10 +13,103 @@ abstract class Daemon
 	static public function init()
 	{
 		self::$clientd = new jsonRPCClient("http://".WALLET_RPC_USER.":".WALLET_RPC_PASS."@".WALLET_RPC_SERVER.":".WALLET_RPC_PORT."");
-
 		self::getLastBlock();
 		self::doFetch();
 		self::updateRichList();
+	}
+	
+	static public function getTransaction($txid){
+		self::$clientd = new jsonRPCClient("http://".WALLET_RPC_USER.":".WALLET_RPC_PASS."@".WALLET_RPC_SERVER.":".WALLET_RPC_PORT."");
+		$tx = self::$clientd->gettransaction($txid);
+		//echo "<pre>";
+		//echo "$txid<br>";
+		//print_r($tx);
+		//echo "</pre>";
+		return self::ParseTransaction($tx, $txid);
+		// return $tx;
+	}
+	
+	static public function getBlock($block){
+		self::$clientd 	= new jsonRPCClient("http://".WALLET_RPC_USER.":".WALLET_RPC_PASS."@".WALLET_RPC_SERVER.":".WALLET_RPC_PORT."");
+		$block_hash 	= self::$clientd->getblockhash((int)$block);
+	    $block_data 	= self::$clientd->getblock($block_hash);
+		return $block_data;
+	}
+	
+	static private function FormatURLAddress($address){
+		return '<a href="search.php?id='.$address.'">'.$address.'</a>';
+	}
+	
+	static private function GetVINAddress2($txid, $vout, $txid_transaction) 
+	{
+		$tx 		= self::$clientd->gettransaction($txid);
+		$amount 	= -$tx["vout"][$vout]["value"];
+		$addy 		= self::GetAddress($tx["vout"][$vout]["scriptPubKey"]);
+		
+		//if($amount > 0 || $amount < 0)
+		//	echo "$txid<br>$txid_transaction<br>";
+	
+		$val = self::FormatURLAddress($addy)." ($amount)";
+		if($amount > 0 || $amount < 0)
+			return $val;
+		else return;
+	}
+	
+	static private function ParseTransaction($tx, $txid_super){
+		$get_vin = false;
+		$empty_vin = true;
+		$empty_vout = true;
+		
+		$val_pre = "";
+		$val_pro = "";
+		
+		foreach ($tx["vout"] as $tx_vout)
+		{
+			if ($tx_vout["value"] > 0) 
+			{
+				$get_vin 	= true;
+				$addy 		= self::GetAddress($tx_vout["scriptPubKey"]);
+				$amount 	= $tx_vout["value"];
+				
+				$val_pro .= "TO: ".self::FormatURLAddress($addy)." ($amount)\n";
+				
+				$empty_vout = false;
+			}
+		}
+
+		if ($get_vin) 
+		{
+			if (isset($tx["vin"]) && !empty($tx["vin"])) 
+			{
+				foreach ($tx["vin"] as $tx_vin) 
+				{
+					if (isset($tx_vin["vout"])) 
+					{
+						$vout = $tx_vin["vout"];
+						$txid = $tx_vin["txid"]; // tx-in id
+						$addy = self::GetVINAddress2($txid, $vout, $txid_super);
+						
+						if($addy)
+							$val_pre .= "FROM: $addy\n";
+						
+						$empty_vin = false;
+					}
+				}
+			}
+		}
+		
+		if($empty_vin && !$empty_vout)
+		{
+			$val_pre .= "FROM: No Inputs (Newly Generated Coins)\n";
+		} 
+		else if($empty_vin && $empty_vout)
+		{
+			$val_pre .= "No outputs nor inputs in transaction!\n";
+		}
+		
+		$val = $val_pre.$val_pro;
+		
+		return $val;
 	}
 	
 	static private function cleanUp()
@@ -52,7 +145,8 @@ abstract class Daemon
 			{
 				$empty_tx = true;
 				
- 				$txid = $tx;
+ 				$txid_super = $tx;
+				$txid = $tx;
 				$tx = self::$clientd->gettransaction($tx);
 
             	$get_vin = false;
@@ -66,8 +160,9 @@ abstract class Daemon
 						$amount 	= $tx_vout["value"];
 						
 						echo "TO: $addy ($amount)($block)\n";
-													
-						query("INSERT INTO tx_data (txid, address, amount, block) VALUES ('$txid','$addy','$amount','$block')");
+						
+						if($amount > 0 || $amount < 0)
+							query("INSERT INTO tx_data (txid, address, amount, block) VALUES ('$txid', '$addy','$amount','$block')");
 						
 						$empty_tx = false;
 					}
@@ -81,10 +176,9 @@ abstract class Daemon
 						{
 							if (isset($tx_vin["vout"])) 
 							{
-								$txid_transaction = $txid;
 								$vout = $tx_vin["vout"];
 								$txid = $tx_vin["txid"]; // tx-in id
-								$addy = self::GetVINAddress($txid, $vout, $block, $txid_transaction);
+								$addy = self::GetVINAddress($txid, $vout, $block, $txid_super);
 								echo "FROM: $addy($block)\n";
 								
 								$empty_tx = false;
@@ -131,8 +225,9 @@ abstract class Daemon
 		$tx 		= self::$clientd->gettransaction($txid);
 		$amount 	= -$tx["vout"][$vout]["value"];
 		$addy 		= self::GetAddress($tx["vout"][$vout]["scriptPubKey"]);
-	
-		query("INSERT INTO tx_data (txid, address, amount, block) VALUES ('$txid_transaction','$addy','$amount','$block')");
+			
+		if($amount > 0 || $amount < 0)
+			query("INSERT INTO tx_data (txid, address, amount, block) VALUES ('$txid_transaction','$addy','$amount','$block')");
 	
 		$val = "$addy ($amount)";
 		return $val;

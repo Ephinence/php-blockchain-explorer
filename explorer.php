@@ -1,8 +1,8 @@
 <?php
 	require_once('config.php');
 	
-	$txData		= Client::getTransactionData(10); 
-	$blockData	= Client::getBlockData(5); 
+	$txData		= Client::getTransactionData(25); 
+	$blockData	= Client::getBlockData(15); 
 	
 	// print_r($txData);
 	// print_r($blockData);
@@ -34,9 +34,9 @@
 		</tr>
 		</tbody>
 	</table>
-	<form target="search.php" method="post">
+	<form action="search.php" method="post">
 		<input name="id" type="text" placeholder="enter block, txid or address" style="width:450px;"/>
-		<input type="submit"/>
+		<input type="submit" value="Submit">	
 	</form>
 	<p>Latest blocks</p>
 	<table cellpadding="0" cellspacing="0" border="0" width="1000" id="distribution">
@@ -61,10 +61,10 @@
 	</tbody>
 	</table>
 	
-	<div style="height:100px;width:100px;"></div>
+	<div style="height:30px;width:100px;"></div>
 	
 	<p>Latest transactions</p>
-	<table cellpadding="0" cellspacing="0" border="0" width="1000" id="distribution">
+	<table cellpadding="0" cellspacing="0" border="0" width="1000" id="distribution" style="margin-bottom:60px;">
 	<thead>
 	<tr>
 		<td>Block</td>
