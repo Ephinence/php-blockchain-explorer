@@ -2,20 +2,20 @@
 	set_time_limit(0);
 	
 	// CRYPTO OPTIONS
-	define("CRYPTONAME",		"BizCoin");
-	define("CRYPTOSHORTNAME",	"BIZ");
+	define("CRYPTONAME",		"");
+	define("CRYPTOSHORTNAME",	"");
 	
 	//DAEMON OPTIONS
-	define("WALLET_RPC_USER",	"user");
-	define("WALLET_RPC_PASS",	"pass");
-	define("WALLET_RPC_SERVER",	"127.0.0.1");
-	define("WALLET_RPC_PORT",	"33482");
+	define("WALLET_RPC_USER",	"");
+	define("WALLET_RPC_PASS",	"");
+	define("WALLET_RPC_SERVER",	"");
+	define("WALLET_RPC_PORT",	"");
 
 	//DATABASE SETTINGS
-	define("DATABASE_NAME",		"explorer");
-	define("DATABASE_HOST",		"localhost");
-	define("DATABASE_USER",		"root");
-	define("DATABASE_PASS",		"root");
+	define("DATABASE_NAME",		"");
+	define("DATABASE_HOST",		"");
+	define("DATABASE_USER",		"");
+	define("DATABASE_PASS",		"");
 	
 	require_once("classes/json-rpc-client.php");
 	require_once("classes/database.class.php");
